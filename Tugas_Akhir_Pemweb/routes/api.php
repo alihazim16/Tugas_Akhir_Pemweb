@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Public route
+Route::get('/welcome', function () {
+    return response()->json(['message' => 'Welcome to the API']);
+});
+
+// Protected route - only for authenticated users with role "admin"
+Route::middleware(['auth:api', 'role:admin'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });
