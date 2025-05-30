@@ -2,64 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    // Login User
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60
-        ]);
-    }
-
-    // Register User
+    /**
+     * REGISTER
+     */
     public function register(Request $request)
     {
-        $request->validate([
+        // Validasi data input
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
+            'role' => 'required|in:admin,user' // Tambahkan validasi role jika perlu
         ]);
 
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        // Buat user
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password)
         ]);
 
+        // Assign role (pakai Spatie)
+        $user->assignRole($request->role); // misalnya 'admin' atau 'user'
+
+        // Buat token JWT
         $token = JWTAuth::fromUser($user);
 
         return response()->json([
-            'message' => 'User successfully registered',
-            'user' => $user,
-            'access_token' => $token,
-        ], 201);
-    }
-
-    // Logout
-    public function logout()
-    {
-        Auth::logout();
-        return response()->json(['message' => 'Successfully logged out']);
-    }
-
-    // Get authenticated user
-    public function me()
-    {
-        return response()->json(auth()->user());
+            'message' => 'Register berhasil',
+            'user'    => $user,
+            'role'    => $user->getRoleNames(),
+            'token'   => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60
+        ]);
     }
 }
