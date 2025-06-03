@@ -6,10 +6,9 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    // Tampilkan halaman dashboard
     public function index()
     {
-        return response()->json([
-            'message' => 'Selamat datang di dashboard admin',
-        ]);
+        return view('dashboard');
     }
 }

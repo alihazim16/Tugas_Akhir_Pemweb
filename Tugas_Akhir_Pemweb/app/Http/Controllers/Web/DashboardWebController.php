@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardWebController extends Controller
 {
     public function index()
     {
-        return view('dashboard'); // pastikan kamu punya file resources/views/dashboard.blade.php
+        $user = Auth::user();
+
+        return view('dashboard', compact('user'));
     }
 }

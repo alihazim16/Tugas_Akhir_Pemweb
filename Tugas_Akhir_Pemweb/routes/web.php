@@ -1,39 +1,35 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Web\AuthWebController;
-use App\Http\Controllers\Web\DashboardWebController;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| These routes are for web (Blade-based) views. If you're building
-| an API, use routes/api.php. These are intended for form pages,
-| frontend rendering with Blade.
-|
 */
 
-// Halaman utama
-Route::get('/', function () {
-    return view('welcome');
-});
+// Halaman login
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 
-// Halaman Register
-Route::get('/register', function () {
-    return view('register');
-});
+// Halaman register
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 
-// Halaman Login
-Route::get('/login', function () {
-    return view('login');
-});
+// Logout
+Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
 
-// Dashboard (jika sudah login)
-Route::get('/dashboard', [DashboardWebController::class, 'index'])->middleware('auth');
+    return redirect()->route('login');
+})->name('logout');
 
-// Fallback jika route tidak ditemukan
-Route::fallback(function () {
-    return response()->view('errors.404', [], 404);
+// Halaman dashboard (hanya bisa diakses oleh user yang login)
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
