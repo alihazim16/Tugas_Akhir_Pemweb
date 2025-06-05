@@ -6,16 +6,18 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use Spatie\Permission\Traits\HasRoles; // Import trait HasRoles dari Spatie
+use Tymon\JWTAuth\Contracts\JWTSubject; // Import kontrak JWTSubject dari Tymon JWTAuth
+use App\Models\Comment; // Import model Comment untuk relasi
+use App\Models\Project; // Import model Project untuk relasi
+use App\Models\Task;    // Import model Task untuk relasi
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject // Implementasikan JWTSubject untuk JWT Auth
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles; // Gunakan HasRoles trait untuk Spatie Permission
 
     /**
-     * The attributes that are mass assignable.
+     * Atribut yang dapat diisi secara massal (mass assignable).
      *
      * @var array<int, string>
      */
@@ -26,7 +28,7 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atribut yang harus disembunyikan untuk serialisasi (misalnya saat diubah ke JSON).
      *
      * @var array<int, string>
      */
@@ -36,31 +38,66 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
-     * The attributes that should be cast.
+     * Atribut yang harus di-cast ke tipe data tertentu.
      *
      * @var array<string, string>
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
+        'email_verified_at' => 'datetime', // Mengubah timestamp verifikasi email menjadi objek datetime
     ];
 
     /**
-     * JWT - Get the identifier that will be stored in the subject claim of the JWT.
+     * JWT - Dapatkan pengidentifikasi yang akan disimpan dalam klaim subjek JWT.
+     * Metode ini diperlukan saat mengimplementasikan Tymon\JWTAuth\Contracts\JWTSubject.
      *
      * @return mixed
      */
     public function getJWTIdentifier()
     {
-        return $this->getKey();
+        return $this->getKey(); // Mengembalikan primary key dari user
     }
 
     /**
-     * JWT - Return a key value array, containing any custom claims to be added to the JWT.
+     * JWT - Kembalikan array key-value yang berisi klaim kustom apa pun yang akan ditambahkan ke JWT.
+     * Metode ini diperlukan saat mengimplementasikan Tymon\JWTAuth\Contracts\JWTSubject.
      *
      * @return array
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return []; // Untuk saat ini, tidak ada klaim kustom tambahan
+    }
+
+    /**
+     * Relasi: Dapatkan proyek yang dibuat oleh user ini.
+     * Relasi One-to-Many.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function createdProjects()
+    {
+        return $this->hasMany(Project::class, 'created_by');
+    }
+
+    /**
+     * Relasi: Dapatkan tugas yang ditugaskan kepada user ini.
+     * Relasi One-to-Many.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function assignedTasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    /**
+     * Relasi: Dapatkan komentar yang dibuat oleh user ini.
+     * Relasi One-to-Many.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }

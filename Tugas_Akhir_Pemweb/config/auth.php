@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'api',
+        'guard' => 'web', // <-- PASTIKAN INI 'web' untuk UI berbasis sesi
         'passwords' => 'users',
     ],
 
@@ -37,12 +37,12 @@ return [
 
     'guards' => [
         'web' => [
-            'driver' => 'session',
+            'driver' => 'session', // <-- Driver untuk UI login berbasis sesi
             'provider' => 'users',
         ],
 
         'api' => [
-            'driver' => 'jwt',
+            'driver' => 'jwt', // <-- Driver ini digunakan untuk API berbasis token JWT
             'provider' => 'users',
         ],
     ],
@@ -72,7 +72,7 @@ return [
 
         // 'users' => [
         //     'driver' => 'database',
-        //     'table' => 'users',
+        //     // 'table' => 'users', // Uncomment dan sesuaikan jika menggunakan driver 'database'
         // ],
     ],
 
@@ -95,8 +95,8 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_resets',
-            'expire' => 60,
-            'throttle' => 60,
+            'expire' => 60, // Token reset password berlaku selama 60 menit
+            'throttle' => 60, // Batas permintaan reset password per menit
         ],
     ],
 
@@ -111,6 +111,6 @@ return [
     |
     */
 
-    'password_timeout' => 10800,
+    'password_timeout' => 10800, // 3 jam (3 * 60 * 60 detik)
 
 ];

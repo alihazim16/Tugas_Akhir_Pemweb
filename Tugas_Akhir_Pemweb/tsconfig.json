@@ -1,0 +1,30 @@
+// tsconfig.json (di root proyek)
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "./", // Ini penting, berarti base untuk path adalah root proyek
+    "paths": {
+      // Jika Anda menggunakan alias seperti '@/components', tambahkan di sini:
+      // "@/*": ["./resources/js/*"]
+    }
+  },
+  "include": [
+    "resources/js/**/*.ts",    // Sekarang path ini benar dari root
+    "resources/js/**/*.tsx",   // Sekarang path ini benar dari root
+    "resources/js/**/*.d.ts"   // Sekarang path ini benar dari root
+  ],
+  "exclude": ["node_modules", "vendor"]
+}
