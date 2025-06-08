@@ -1,15 +1,11 @@
 <?php
+
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
 
-// Halaman utama (opsional)
-Route::get('/', function () {
-    return view('welcome');
-});
+// Jika ada route backend khusus, tulis di atas sini
 
-// Route untuk login Blade
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout']);
-
-// Route lain untuk web (Blade) bisa ditambah di sini
+// Fallback: arahkan semua route ke index.html React
+Route::get('/{any}', function () {
+    return file_get_contents(public_path('index.html'));
+})->where('any', '.*');

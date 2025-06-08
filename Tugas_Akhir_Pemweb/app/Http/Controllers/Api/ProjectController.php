@@ -25,9 +25,9 @@ class ProjectController extends Controller
     {
         $user = Auth::user();
         if ($user->hasAnyRole(['admin', 'project manager'])) {
-            $projects = Project::with('creator')->latest()->get();
+            $projects = Project::with(['creator', 'tasks'])->latest()->get();
         } else {
-            $projects = Project::where('created_by', $user->id)->with('creator')->latest()->get();
+            $projects = Project::where('created_by', $user->id)->with(['creator', 'tasks'])->latest()->get();
         }
         return response()->json($projects);
     }
@@ -35,20 +35,13 @@ class ProjectController extends Controller
     // Simpan project baru
     public function store(Request $request)
     {
-        try {
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'status' => 'nullable|in:ongoing,completed,on hold',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validasi gagal.',
-                'errors' => $e->errors()
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|in:ongoing,completed,on hold',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
 
         $validatedData['created_by'] = Auth::id();
         $project = Project::create($validatedData);
@@ -63,7 +56,7 @@ class ProjectController extends Controller
         if (!$user->hasAnyRole(['admin', 'project manager']) && $project->created_by !== $user->id) {
             return response()->json(['message' => 'Anda tidak memiliki akses ke proyek ini.'], 403);
         }
-        return response()->json($project->load('creator', 'tasks'));
+        return response()->json($project->load(['creator', 'tasks']));
     }
 
     // Update project
@@ -74,20 +67,13 @@ class ProjectController extends Controller
             return response()->json(['message' => 'Anda tidak memiliki akses untuk mengupdate proyek ini.'], 403);
         }
 
-        try {
-            $validatedData = $request->validate([
-                'name' => 'sometimes|required|string|max:255',
-                'description' => 'nullable|string',
-                'status' => 'sometimes|nullable|in:ongoing,completed,on hold',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validasi gagal.',
-                'errors' => $e->errors()
-            ], 422);
-        }
+        $validatedData = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'sometimes|nullable|in:ongoing,completed,on hold',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
 
         $project->update($validatedData);
 
@@ -97,7 +83,12 @@ class ProjectController extends Controller
     // Hapus project
     public function destroy(Project $project)
     {
+        $user = Auth::user();
+        if (!$user->hasAnyRole(['admin', 'project manager']) && $project->created_by !== $user->id) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk menghapus proyek ini.'], 403);
+        }
+
         $project->delete();
-        return response()->json(['message' => 'Proyek berhasil dihapus.'], 204);
+        return response()->json(['message' => 'Proyek berhasil dihapus.'], 200);
     }
 }

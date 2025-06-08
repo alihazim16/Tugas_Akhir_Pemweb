@@ -1,17 +1,20 @@
-// resources/js/app.tsx (Contoh, sesuaikan dengan setup Vite/React/Routing-mu)
-import './bootstrap';
-import '../css/app.css';
-
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import ProjectsPage from './pages/ProjectsPage'; // <-- Import ProjectsPage
+import { createRoot } from 'react-dom/client';
 
-// Ini contoh sederhana untuk render langsung
-// Untuk aplikasi yang lebih besar, gunakan React Router atau Inertia.js
-if (document.getElementById('app')) {
-    ReactDOM.createRoot(document.getElementById('app')!).render(
-        <React.StrictMode>
-            <ProjectsPage /> {/* Render halaman proyek */}
-        </React.StrictMode>
+const App: React.FC = () => {
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="bg-white p-8 rounded shadow max-w-md w-full">
+                <h1 className="text-2xl font-bold mb-4 text-center">Hello from React + TypeScript!</h1>
+                <p className="text-center text-gray-600">
+                    Edit <code>resources/js/app.tsx</code> to get started.
+                </p>
+            </div>
+        </div>
     );
+};
+
+const container = document.getElementById('app');
+if (container) {
+    createRoot(container).render(<App />);
 }

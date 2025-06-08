@@ -1,18 +1,21 @@
 <?php
 
+
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Api\ProjectController; // <- Perbaiki di sini
+use App\Http\Controllers\Api\RegisterController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ProjectController;
 
-// Endpoint login API (untuk SPA/React, jika diperlukan)
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout']);
+// Endpoint register user (tanpa login)
+Route::post('register', [RegisterController::class, 'register']);
 
-// Endpoint project (gunakan middleware auth:api jika perlu)
+// Contoh: endpoint login (jika sudah ada AuthController)
+// Route::post('login', [AuthController::class, 'login']);
+
+// Endpoint CRUD user & project (hanya bisa diakses setelah login)
 Route::middleware('auth:api')->group(function () {
-    Route::get('/projects', [ProjectController::class, 'index']);
-    Route::get('/projects/{project}', [ProjectController::class, 'show']);
-    Route::post('/projects', [ProjectController::class, 'store']);
-    Route::put('/projects/{project}', [ProjectController::class, 'update']);
-    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+    Route::apiResource('users', UserController::class);
+    Route::apiResource('projects', ProjectController::class);
+    // Tambahkan route lain di sini jika perlu
 });
