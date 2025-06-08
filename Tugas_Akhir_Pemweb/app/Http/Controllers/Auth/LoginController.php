@@ -19,11 +19,13 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
+    // Tampilkan form login (Blade)
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
+    // Login untuk Blade (form HTML)
     public function login(Request $request)
     {
         $request->validate([
@@ -33,36 +35,31 @@ class LoginController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        Log::info('Percobaan login untuk email: ' . $credentials['email']);
-
-        $user = User::where('email', $credentials['email'])->first();
-
-        if ($user && Hash::check($credentials['password'], $user->password)) {
-            Auth::login($user, $request->boolean('remember'));
-            $request->session()->regenerate();
-
-            $jwtToken = null; // Inisialisasi token menjadi null
+        // Jika request dari API (AJAX/SPA), balas JSON
+        if ($request->expectsJson() || $request->is('api/*')) {
             try {
-                $jwtToken = JWTAuth::fromUser($user);
-                Log::info('JWT Token berhasil dibuat untuk user: ' . $user->email . ' (dari LoginController).');
+                if (!$token = JWTAuth::attempt($credentials)) {
+                    return response()->json(['error' => 'Unauthorized'], 401);
+                }
             } catch (JWTException $e) {
-                Log::error('Gagal membuat JWT Token (JWTException) dari LoginController untuk user ' . $user->email . ': ' . $e->getMessage());
-            } catch (\Exception $e) {
-                Log::error('Gagal membuat JWT Token (Exception umum) dari LoginController untuk user ' . $user->email . ': ' . $e->getMessage());
+                return response()->json(['error' => 'Could not create token'], 500);
             }
-
-            Log::info('Login SESI BERHASIL untuk user: ' . $user->email . '. Mengarahkan ke halaman penerima token.');
-
-            // --- PERUBAHAN UTAMA DI SINI ---
-            // Redirect ke halaman perantara yang akan menyimpan token ke localStorage
-            return redirect()->route('token.receiver', ['token' => $jwtToken]);
-
-        } else {
-            Log::warning('Login GAGAL untuk email: ' . $credentials['email'] . ' - Kredensial tidak valid.');
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+            $user = Auth::user();
+            return response()->json([
+                'token' => $token,
+                'user' => $user,
             ]);
         }
+
+        // Jika request dari form Blade
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended('/');
+        }
+
+        return back()->withErrors([
+            'email' => 'Email atau password salah.',
+        ])->withInput($request->only('email'));
     }
 
     public function logout(Request $request)
@@ -70,6 +67,13 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        // Jika logout dari API
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'Anda telah berhasil logout.']);
+        }
+
+        // Jika logout dari web
         return redirect('/login')->with('status', 'Anda telah berhasil logout.');
     }
 }

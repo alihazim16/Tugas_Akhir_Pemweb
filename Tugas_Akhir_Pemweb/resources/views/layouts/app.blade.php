@@ -1,21 +1,16 @@
+{{-- resources/views/layouts/app.blade.php --}}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', config('app.name', 'Project Management System'))</title>
-
-    {{-- Vite directives untuk mengkompilasi aset React dan Tailwind CSS --}}
-    @viteReactRefresh
-    @vite('resources/js/app.tsx')
-
-    {{-- Gaya kustom tambahan jika diperlukan, atau bisa langsung di app.css --}}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ config('app.name', 'Project Management System') }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        .login-bg-gradient {
-            background: linear-gradient(to right top, #007bff, #6610f2);
-        }
-        .text-gradient {
-            background: linear-gradient(to right, #667eea, #764ba2);
+        /* Custom styles here */
+        .gradient-text {
+            background: linear-gradient(90deg, #2563eb, #1e40af);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -32,10 +27,10 @@
             <div class="flex items-center space-x-4">
                 @guest
                     <a class="text-gray-600 hover:text-blue-600 transition-colors duration-200" href="{{ route('login') }}">Login</a>
-                    <a class="text-gray-600 hover:text-blue-600 transition-colors duration-200" href="{{ route('register') }}">Register</a>
+                    {{-- <a class="text-gray-600 hover:text-blue-600 transition-colors duration-200" href="{{ route('register') }}">Register</a> --}}
                 @else
                     <span class="text-gray-600">Halo, {{ Auth::user()->name }}</span>
-                    <form action="{{ route('logout') }}" method="POST">
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="text-gray-600 hover:text-red-600 transition-colors duration-200">Logout</button>
                     </form>
@@ -51,27 +46,5 @@
         </div>
     </main>
 
-    {{-- Footer --}}
-    <footer class="text-center mt-5 mb-4 text-gray-500 text-sm">
-        &copy; {{ date('Y') }} - Dibangun dengan Laravel & React
-    </footer>
-
-    {{-- SCRIPT UNTUK MENYIMPAN JWT TOKEN KE LOCALSTORAGE DAN DIAGNOSA --}}
-    <script>
-        // Periksa apakah ada token JWT di sesi flash data
-        @if(session('jwt_token'))
-            const jwtToken = '{{ session('jwt_token') }}';
-            localStorage.setItem('jwt_token', jwtToken);
-            console.log('--- DIAGNOSA JWT ---');
-            console.log('JWT Token ditemukan di sesi dan disimpan di localStorage.');
-            console.log('Token:', jwtToken.substring(0, 30) + '...'); // Tampilkan sebagian token
-            console.log('--- AKHIR DIAGNOSA JWT ---');
-        @else
-            console.log('--- DIAGNOSA JWT ---');
-            console.log('Tidak ada JWT Token di sesi flash data.');
-            console.log('Token di localStorage saat ini:', localStorage.getItem('jwt_token') ? 'Ada' : 'Tidak Ada');
-            console.log('--- AKHIR DIAGNOSA JWT ---');
-        @endif
-    </script>
 </body>
 </html>

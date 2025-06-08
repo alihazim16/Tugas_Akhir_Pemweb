@@ -12,21 +12,17 @@ class ProjectController extends Controller
 {
     public function __construct()
     {
-        // Middleware untuk permission, diterapkan di konstruktor
-        // 'only' atau 'except' digunakan untuk menerapkan middleware hanya pada metode tertentu
-        $this->middleware('permission:view dashboard')->only(['index', 'show']); // Semua user bisa lihat dashboard
+        // Middleware permission (jika pakai spatie/permission)
+        $this->middleware('permission:view dashboard')->only(['index', 'show']);
         $this->middleware('permission:create project')->only('store');
         $this->middleware('permission:update project')->only('update');
         $this->middleware('permission:delete project')->only('destroy');
-        $this->middleware('auth:api'); // Pastikan ini di-apply ke semua method yang butuh Auth API
+        $this->middleware('auth:api');
     }
 
-    /**
-     * Display a listing of the resource.
-     */
+    // Tampilkan semua project
     public function index()
     {
-        // Ambil semua proyek. Jika user bukan admin/manager, filter hanya proyek mereka.
         $user = Auth::user();
         if ($user->hasAnyRole(['admin', 'project manager'])) {
             $projects = Project::with('creator')->latest()->get();
@@ -36,17 +32,14 @@ class ProjectController extends Controller
         return response()->json($projects);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Simpan project baru
     public function store(Request $request)
     {
-        // Validasi input
         try {
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'status' => 'nullable|in:ongoing,completed,on hold', // Enum status
+                'status' => 'nullable|in:ongoing,completed,on hold',
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
             ]);
@@ -57,34 +50,25 @@ class ProjectController extends Controller
             ], 422);
         }
 
-        // Tambahkan ID user yang membuat proyek
         $validatedData['created_by'] = Auth::id();
-
         $project = Project::create($validatedData);
 
-        return response()->json($project, 201); // 201 Created
+        return response()->json($project, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // Tampilkan detail project
     public function show(Project $project)
     {
-        // Cek permission: admin/manager bisa lihat semua, user biasa hanya bisa lihat proyek miliknya
         $user = Auth::user();
         if (!$user->hasAnyRole(['admin', 'project manager']) && $project->created_by !== $user->id) {
             return response()->json(['message' => 'Anda tidak memiliki akses ke proyek ini.'], 403);
         }
-
-        return response()->json($project->load('creator', 'tasks')); // Load creator dan tasks terkait
+        return response()->json($project->load('creator', 'tasks'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // Update project
     public function update(Request $request, Project $project)
     {
-        // Cek permission: admin/manager bisa update semua, user biasa hanya bisa update proyek miliknya
         $user = Auth::user();
         if (!$user->hasAnyRole(['admin', 'project manager']) && $project->created_by !== $user->id) {
             return response()->json(['message' => 'Anda tidak memiliki akses untuk mengupdate proyek ini.'], 403);
@@ -110,15 +94,10 @@ class ProjectController extends Controller
         return response()->json($project);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Hapus project
     public function destroy(Project $project)
     {
-        // Permission 'delete project' hanya untuk Admin. Ini sudah dijamin oleh middleware.
-        // Tidak perlu cek created_by karena hanya admin yang boleh delete project.
         $project->delete();
-
-        return response()->json(['message' => 'Proyek berhasil dihapus.'], 204); // 204 No Content
+        return response()->json(['message' => 'Proyek berhasil dihapus.'], 204);
     }
 }
