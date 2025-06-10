@@ -11,16 +11,17 @@ use Illuminate\Support\Facades\Route;
 class RouteServiceProvider extends ServiceProvider
 {
     /**
-     * The path to your application's "home" route.
+     * Jalur ke rute "home" aplikasi Anda.
      *
-     * Typically, users are redirected here after authentication.
+     * Biasanya, pengguna akan dialihkan ke sini setelah otentikasi.
+     * Kita atur ke '/dashboard' karena di sana aplikasi React akan dimuat.
      *
      * @var string
      */
-    public const HOME = '/home';
+    public const HOME = '/dashboard'; // <-- PASTIKAN INI ADALAH '/dashboard'
 
     /**
-     * Define your route model bindings, pattern filters, and other route configuration.
+     * Daftarkan layanan rute aplikasi.
      */
     public function boot(): void
     {
@@ -29,10 +30,16 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            // Rute API:
+            // Dimuat dengan awalan 'api' dan middleware 'api'.
+            // Digunakan untuk interaksi antara frontend React dan backend Laravel.
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
+            // Rute Web:
+            // Dimuat dengan middleware 'web'.
+            // Digunakan untuk halaman Blade (login, register, dashboard jika sebagian Blade).
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
