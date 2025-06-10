@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -25,7 +24,7 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    // Login untuk Blade (form HTML)
+    // Login untuk Blade (form HTML) dan API
     public function login(Request $request)
     {
         $request->validate([
@@ -54,7 +53,7 @@ class LoginController extends Controller
         // Jika request dari form Blade
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            return redirect()->intended('/dashboard');
         }
 
         return back()->withErrors([

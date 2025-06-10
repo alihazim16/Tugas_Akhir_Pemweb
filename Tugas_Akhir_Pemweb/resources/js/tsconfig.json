@@ -1,0 +1,18 @@
+// tsconfig.json
+{
+  "compilerOptions": {
+    // ... (opsi compiler lainnya) ...
+    "jsx": "react-jsx",
+    "baseUrl": "./", // Penting untuk resolusi path relatif
+    "paths": {
+      // Jika Anda menggunakan alias seperti '@/components', tambahkan di sini:
+      // "@/*": ["./resources/js/*"]
+    }
+  },
+  "include": [
+    "resources/js/**/*.ts",
+    "resources/js/**/*.tsx",
+    "resources/js/**/*.d.ts"
+  ],
+  "exclude": ["node_modules", "vendor"]
+}

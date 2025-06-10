@@ -21,8 +21,9 @@ class DashboardController extends Controller
         // Ambil statistik sederhana untuk dashboard
         $totalProjects = Project::count();
         $myProjects = Project::where('created_by', $user->id)->count();
+        // Baris-baris berikut membutuhkan kolom 'assigned_to' di tabel 'tasks'
         $totalTasks = Task::count();
-        $myAssignedTasks = Task::where('assigned_to', $user->id)->count();
+        $myAssignedTasks = Task::where('assigned_to', $user->id)->count(); // <-- Baris 25 yang error
 
         $tasksToDo = Task::where('status', 'to_do')->count();
         $tasksInProgress = Task::where('status', 'in_progress')->count();
